@@ -33,28 +33,15 @@ const updateUrlPage = debounce((page: number) => {
 const { model: searchQuery, provider: searchProvider } = useGlobalSearch()
 const query = computed(() => searchQuery.value)
 
-// Parses the raw search query to extract package info, such as scope, name, version.
-// Uses this info to provide a strippedQuery (the query, but without version info) that is used for searching.
-const parsedQuery = computed(() => {
-  const q = query.value.trim()
-  // Regex matches a (un)scoped package and optionally extracts versioning info using the following syntax: @scope/specifier@version
-  // It makes use of 4 capture groups to extract this info.
-  const match = q.match(
-    /^(?:@(?<scope>[^/]+)\/)?(?<specifier>[^/@ ]+)(?:@(?<version>[^ ]*))?(?<trailing>.*)/,
-  )
-  if (!match) return { scope: null, name: q, version: null, strippedQuery: q }
+const {
+  scope: packageScope,
+  name: packageName,
+  trailing: queryTrailing,
+} = useParsedSearchQuery(query)
 
-  const { scope, specifier, version, trailing } = match.groups ?? {}
-  // Reconstruct the query without the version info, essentially stripping the version data:
-  // anything directly after the @ for the version specifier is stripped.
-  const name = scope ? `@${scope}/${specifier}` : (specifier ?? '')
-  const strippedQuery = `${name} ${trailing ?? ''}`.trim()
-
-  return { scope: scope ?? null, name: name, version: version || null, strippedQuery }
-})
-
-const packageScope = computed(() => parsedQuery.value.scope)
-const strippedQuery = computed(() => parsedQuery.value.strippedQuery)
+const versionStrippedQuery = computed(() =>
+  `${packageName.value} ${queryTrailing.value ?? ''}`.trim(),
+)
 
 // Track if page just loaded (for hiding "Searching..." during view transition)
 const hasInteracted = shallowRef(false)
@@ -103,7 +90,7 @@ const visibleResults = computed(() => {
     objects = objects.filter(r => !isPlatformSpecificPackage(r.package.name))
   }
 
-  const q = query.value.trim().toLowerCase()
+  const q = versionStrippedQuery.value.trim().toLowerCase()
   if (!q) {
     return objects === raw.objects ? raw : { ...raw, objects }
   }
@@ -215,7 +202,7 @@ const {
   suggestions: validatedSuggestions,
   packageAvailability,
 } = useSearch(
-  strippedQuery,
+  versionStrippedQuery,
   searchProvider,
   () => ({
     size: requestedSize.value,
@@ -362,7 +349,7 @@ const claimPackageModalRef = useTemplateRef('claimPackageModalRef')
 
 /** Check if there's an exact package match in results */
 const hasExactPackageMatch = computed(() => {
-  const q = query.value.trim().toLowerCase()
+  const q = versionStrippedQuery.value.trim().toLowerCase()
   if (!q || !visibleResults.value) return false
   return visibleResults.value.objects.some(r => r.package.name.toLowerCase() === q)
 })
@@ -682,7 +669,7 @@ defineOgImageComponent('Default', {
           <!-- No results found -->
           <div v-else-if="status === 'success' || status === 'error'" role="status" class="py-12">
             <p class="text-fg-muted font-mono mb-6 text-center">
-              {{ $t('search.no_results', { query: strippedQuery }) }}
+              {{ $t('search.no_results', { query: versionStrippedQuery }) }}
             </p>
 
             <!-- User/Org suggestions when no packages found -->
@@ -718,7 +705,7 @@ defineOgImageComponent('Default', {
           <PackageList
             v-if="displayResults.length > 0 && !isRateLimited"
             :results="displayResults"
-            :search-query="query"
+            :search-query="versionStrippedQuery"
             :filters="filters"
             search-context
             heading-level="h2"
