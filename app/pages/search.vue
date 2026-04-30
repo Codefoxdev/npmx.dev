@@ -40,7 +40,7 @@ const {
 } = useParsedSearchQuery(query)
 
 const versionStrippedQuery = computed(() =>
-  `${packageName.value} ${queryTrailing.value ?? ''}`.trim(),
+  `${packageName.value}${queryTrailing.value ?? ''}`.trim(),
 )
 
 // Track if page just loaded (for hiding "Searching..." during view transition)
