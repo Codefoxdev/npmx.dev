@@ -640,8 +640,8 @@ const rawLiveRegionMessage = computed(() => {
   }
 
   if (status.value === 'success' || status.value === 'error') {
-    if (displayResults.value.length === 0 && query.value) {
-      return $t('search.no_results', { query: query.value })
+    if (displayResults.value.length === 0 && versionStrippedQuery.value) {
+      return $t('search.no_results', { query: versionStrippedQuery.value })
     }
   }
 
