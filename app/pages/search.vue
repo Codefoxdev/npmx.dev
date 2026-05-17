@@ -56,7 +56,7 @@ const {
   scope: packageScope,
   name: packageName,
   trailing: queryTrailing,
-} = useParsedSearchQuery(query)
+} = useParsedSearchQuery(committedQuery)
 
 const versionStrippedQuery = computed(() =>
   `${packageName.value}${queryTrailing.value ?? ''}`.trim(),
@@ -504,13 +504,13 @@ function handleResultsKeydown(e: KeyboardEvent) {
 
     // Check if first result matches the input value exactly
     const firstResult = displayResults.value[0]
-    if (firstResult?.package.name === inputValue) {
+    if (firstResult?.package.name === committedQuery.value) {
       pendingEnterQuery.value = null
       return navigateToPackage(firstResult.package.name)
     }
 
     // No match yet - store input value, watcher will handle navigation when results arrive
-    pendingEnterQuery.value = inputValue
+    pendingEnterQuery.value = committedQuery.value
     return
   }
 
