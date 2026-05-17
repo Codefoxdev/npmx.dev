@@ -32,6 +32,11 @@ export const SHOWCASED_FRAMEWORKS = [
     color: 'oklch(0.7484 0.1439 294.03)',
   },
   {
+    name: 'vitest',
+    package: 'vitest',
+    color: 'oklch(0.8751 0.2422 148.74)',
+  },
+  {
     name: 'next',
     package: 'next',
     color: 'oklch(71.7% .1648 250.794)',
@@ -65,6 +70,11 @@ export const SHOWCASED_FRAMEWORKS = [
     name: 'tanstack start',
     package: '@tanstack/react-start',
     color: 'oklch(60.9% .126 221.723)',
+  },
+  {
+    name: 'storybook',
+    package: 'storybook',
+    color: 'oklch(67.88% 0.2222 5.18)',
   },
 ]
 

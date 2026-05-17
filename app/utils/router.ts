@@ -1,7 +1,12 @@
 import type { RouteLocationRaw } from 'vue-router'
+import { splitPackageName } from '~/utils/package-name'
 
-export function packageRoute(packageName: string, version?: string | null): RouteLocationRaw {
-  const [org, name = ''] = packageName.startsWith('@') ? packageName.split('/') : ['', packageName]
+export function packageRoute(
+  packageName: string,
+  version?: string | null,
+  hash?: string,
+): RouteLocationRaw {
+  const { org, name } = splitPackageName(packageName)
 
   if (version) {
     return {
@@ -9,8 +14,10 @@ export function packageRoute(packageName: string, version?: string | null): Rout
       params: {
         org,
         name,
-        version,
+        // remove spaces to be correctly resolved by router
+        version: version.replace(/\s+/g, ''),
       },
+      hash,
     }
   }
 
@@ -19,6 +26,71 @@ export function packageRoute(packageName: string, version?: string | null): Rout
     params: {
       org,
       name,
+    },
+  }
+}
+
+/** Full version history page (`/package/.../versions`) */
+export function packageVersionsRoute(packageName: string): RouteLocationRaw {
+  const [org, name = ''] = packageName.startsWith('@') ? packageName.split('/') : ['', packageName]
+  return { name: 'package-versions', params: { org, name } }
+}
+
+export function diffRoute(
+  packageName: string,
+  fromVersion: string,
+  toVersion: string,
+): RouteLocationRaw {
+  const { org, name } = splitPackageName(packageName)
+
+  return {
+    name: 'diff',
+    params: {
+      org: org || undefined,
+      packageName: name,
+      versionRange: `${fromVersion}...${toVersion}`,
+    },
+  }
+}
+
+export function changelogRoute(
+  packageName: string,
+  version?: string | null,
+  hash?: string,
+): RouteLocationRaw {
+  const [org, name = ''] = packageName.startsWith('@') ? packageName.split('/') : ['', packageName]
+
+  if (version) {
+    return {
+      name: 'changelog-version',
+      params: {
+        org,
+        name,
+        // remove spaces to be correctly resolved by router
+        version: version.replace(/\s+/g, ''),
+      },
+      hash,
+    }
+  }
+
+  return {
+    name: 'changelog',
+    params: {
+      org,
+      name,
+    },
+  }
+}
+
+export function packageTimelineRoute(packageName: string, version: string): RouteLocationRaw {
+  const { org, name } = splitPackageName(packageName)
+
+  return {
+    name: 'timeline',
+    params: {
+      org: org || undefined,
+      packageName: name,
+      version: version.replace(/\s+/g, ''),
     },
   }
 }

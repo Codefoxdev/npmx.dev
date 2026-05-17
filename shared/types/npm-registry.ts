@@ -23,10 +23,12 @@ export interface PackumentVersion extends PackumentVersionWithoutAttestations {
   dist: PackumentVersionWithoutAttestations['dist'] & { attestations?: NpmVersionAttestations }
 }
 
+export type PackumentLicense = string | { type: string; url?: string }
+
 export type Packument = Omit<PackumentWithoutLicenseObjects, 'license' | 'versions'> & {
   // Fix for license field being incorrectly typed in @npm/types
   // TODO: Remove this type override when @npm/types fixes the license field typing
-  license?: string | { type: string; url?: string }
+  license?: PackumentLicense
   versions: Record<string, PackumentVersion>
 }
 
@@ -47,6 +49,9 @@ export type PublishTrustLevel = 'none' | 'trustedPublisher' | 'provenance'
 export type SlimVersion = Pick<SlimPackumentVersion, 'version' | 'deprecated' | 'tags'> & {
   hasProvenance?: boolean
   trustLevel?: PublishTrustLevel
+  license?: string
+  /** Package type field — "module" indicates ESM */
+  type?: string
 }
 
 /**
@@ -128,8 +133,7 @@ export interface NpmSearchResponse {
 
 export interface NpmSearchResult {
   package: NpmSearchPackage
-  score: NpmSearchScore
-  searchScore: number
+  searchScore?: number
   /** Download counts (weekly/monthly) */
   downloads?: {
     weekly?: number
@@ -187,15 +191,8 @@ export interface NpmSearchPackage {
   publisher?: NpmSearchPublisher
   maintainers?: NpmPerson[]
   license?: string
-}
-
-export interface NpmSearchScore {
-  final: number
-  detail: {
-    quality: number
-    popularity: number
-    maintenance: number
-  }
+  /** Algolia-only: package is an npm-owned security-holder takedown */
+  isSecurityHeld?: boolean
 }
 
 /**
@@ -355,6 +352,8 @@ export interface PackageFileTree {
   path: string
   /** Node type */
   type: 'file' | 'directory'
+  /** File hash (only for files) */
+  hash?: string
   /** Node size in bytes (file size or recursive directory total) */
   size?: number
   /** Child nodes (only for directories) */
@@ -379,6 +378,7 @@ export interface PackageFileContentResponse {
   version: string
   path: string
   language: string
+  contentType: string | null
   content: string
   html: string
   lines: number
