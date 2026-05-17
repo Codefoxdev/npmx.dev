@@ -54,12 +54,12 @@ const query = computed(() => searchQuery.value)
 
 const {
   scope: packageScope,
-  name: packageName,
+  name: queryPackageName,
   trailing: queryTrailing,
 } = useParsedSearchQuery(committedQuery)
 
 const versionStrippedQuery = computed(() =>
-  `${packageName.value}${queryTrailing.value ?? ''}`.trim(),
+  `${queryPackageName.value}${queryTrailing.value ?? ''}`.trim(),
 )
 
 // Track if page just loaded (for hiding "Searching..." during view transition)
